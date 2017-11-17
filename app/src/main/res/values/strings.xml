@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">BFrohtuA</string>
+    <string name="facebook_app_id">756939494508850</string>
+    <string name="fb_login_protocol_scheme">fb756939494508850</string>
+
+    <string name="upload">Open Gallery for Upload</string>
+    <string name="choicephoto">Choice Photo</string>
+
+</resources>

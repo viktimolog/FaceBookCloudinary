@@ -1,0 +1,26 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:tools="http://schemas.android.com/tools"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+             tools:context="edu.test1.bfrohtua.bfrohtua.FragmentCloudinary" android:orientation="vertical">
+
+    <Button
+            android:text="@string/upload"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/btnChoice" android:layout_weight="0.9"/>
+
+    <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/iv"
+            android:scaleType="centerCrop"
+            android:visibility="visible" android:layout_weight="0.2"/>
+
+    <Spinner
+            android:text="@string/choicephoto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/spinner" android:layout_weight="0.9" android:textAlignment="center"/>
+
+</LinearLayout>
