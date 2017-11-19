@@ -64,6 +64,36 @@ public class FragmentCloudinary extends Fragment
 
         iv = (ImageView)v.findViewById(R.id.iv);
 
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+        {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
+            {
+                con.setChoicePhoto(con.getPhotosFromCloudinary().get(position));
+                Log.d("choicePhoto = ", con.getChoicePhoto());
+
+                new Thread(new GetImageFromCloudinary(con)).start();
+
+                try//этот колхоз порешать хендлером
+                {
+                    Thread.sleep(10000);//меньше 10с не катит
+                }
+                catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+
+                iv.setImageBitmap(con.getBmp());
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView)
+            {
+                //ничо не делаю
+            }
+
+        });
+
         btnChoice.setOnClickListener(new View.OnClickListener()
         {
             @Override

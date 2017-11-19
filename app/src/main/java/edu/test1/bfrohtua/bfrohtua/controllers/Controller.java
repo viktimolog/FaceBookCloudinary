@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -16,6 +17,7 @@ import com.cloudinary.Url;
 import com.cloudinary.utils.ObjectUtils;
 import edu.test1.bfrohtua.bfrohtua.ImageData;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +25,11 @@ import java.util.Map;
 
 public class Controller
 {
+    private String choicePhoto;
+
+    private URL url;
+    private Bitmap bmp;
+
     private String email;
 
     private SQLiteDatabase db;
@@ -253,5 +260,29 @@ public class Controller
 
     public ArrayList<String> getPhotosFromCloudinary() {
         return photosFromCloudinary;
+    }
+
+    public URL getUrl() {
+        return url;
+    }
+
+    public Bitmap getBmp() {
+        return bmp;
+    }
+
+    public void setUrl(URL url) {
+        this.url = url;
+    }
+
+    public void setBmp(Bitmap bmp) {
+        this.bmp = bmp;
+    }
+
+    public String getChoicePhoto() {
+        return choicePhoto;
+    }
+
+    public void setChoicePhoto(String choicePhoto) {
+        this.choicePhoto = choicePhoto;
     }
 }
