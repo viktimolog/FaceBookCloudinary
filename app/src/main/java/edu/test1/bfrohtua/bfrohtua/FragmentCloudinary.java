@@ -2,6 +2,8 @@ package edu.test1.bfrohtua.bfrohtua;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -12,6 +14,9 @@ import android.widget.*;
 import edu.test1.bfrohtua.bfrohtua.controllers.Controller;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 
 import static android.app.Activity.RESULT_OK;
@@ -19,7 +24,6 @@ import static android.app.Activity.RESULT_OK;
 
 public class FragmentCloudinary extends Fragment
 {
-
     private ArrayAdapter<String> adapterPhotos;
     private Spinner spinner;
     private Button btnChoice;
@@ -33,6 +37,40 @@ public class FragmentCloudinary extends Fragment
 
     }
 
+    class GetImageFromCloudinary extends AsyncTask<Void, Integer, Void> {
+        @Override
+        protected Void doInBackground(Void... unused)
+        {
+            try
+            {
+                con.setUrl(new URL(con.getMobileCloudinary().url().generate(con.getChoicePhoto())));
+            }
+            catch (MalformedURLException e)
+            {
+                e.printStackTrace();
+            }
+
+            try
+            {
+                con.setBmp(BitmapFactory.decodeStream(con.getUrl().openConnection().getInputStream()));
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+        @Override
+        protected void onProgressUpdate(Integer... items) {
+
+        }
+        @Override
+        protected void onPostExecute(Void unused) {
+            iv.setImageBitmap(con.getBmp());
+        }
+    }
+
     public void refreshSpinner()
     {
         con.getPhotosFromDB();
@@ -43,6 +81,13 @@ public class FragmentCloudinary extends Fragment
                 , android.R.layout.simple_list_item_1 , con.getPhotosFromCloudinary());
 
         spinner.setAdapter(adapterPhotos);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);//фрагмент не изменяется при перевороте устройства
     }
 
     @Override
@@ -69,27 +114,17 @@ public class FragmentCloudinary extends Fragment
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
             {
-                con.setChoicePhoto(con.getPhotosFromCloudinary().get(position));
-                Log.d("choicePhoto = ", con.getChoicePhoto());
+                con.setChoicePhoto(con.getPhotosFromCloudinary().get(position));//0 start OK
+//                Log.d("choicePhoto 0 = ", con.getChoicePhoto());
 
-                new Thread(new GetImageFromCloudinary(con)).start();
+                new GetImageFromCloudinary().execute();
 
-                try//этот колхоз порешать хендлером
-                {
-                    Thread.sleep(10000);//меньше 10с не катит
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-
-                iv.setImageBitmap(con.getBmp());
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView)
             {
-                //ничо не делаю
+
             }
 
         });
@@ -136,7 +171,7 @@ public class FragmentCloudinary extends Fragment
 
                             imageData.setFilePath(con.getPath(getActivity(), imageData.getUri()));//TODO getActivity() не факт OK
 
-                            Log.d("imageData.filePath = ",imageData.getFilePath());//OK
+//                            Log.d("imageData.filePath = ",imageData.getFilePath());//OK
 
                             con.getImages().add(imageData);
                         }
@@ -145,8 +180,6 @@ public class FragmentCloudinary extends Fragment
                             e.printStackTrace();
                         }
                     }
-
-                    Toast.makeText(getActivity(),con.getImages().size()+"" , Toast.LENGTH_LONG).show();
 
                     new Thread(new UploadToCloudinary(con)).start();//пытаемся загрузить на cloudinary TODO
 
@@ -162,5 +195,13 @@ public class FragmentCloudinary extends Fragment
                     refreshSpinner();
                 }
         }
+    }
+
+    public ImageView getIv() {
+        return iv;
+    }
+
+    public void setIv(ImageView iv) {
+        this.iv = iv;
     }
 }

@@ -88,13 +88,7 @@ public class ActivityLogin extends AppCompatActivity
                 ActivityLogin ma = wrActivity.get();
                 if (ma != null)
                 {
-                    //проверка есть ли юзер адд ту база и тп
-
-                    ma.con.setEmail(msg.obj.toString());
-
-                    Log.d("email handler = ", ma.con.getEmail());
-
-                    ma.installFragment(new FragmentCloudinary());
+                    new Thread(new GetImageFromCloudinary(ma.con)).start();
                 }
             }
            /* if (msg.what == ActivityLogin.HANDLER_KEYUSERNAME)//static const

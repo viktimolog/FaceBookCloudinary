@@ -30,7 +30,6 @@ private Controller con;
 
 public UploadToCloudinary(Controller con)
 {
-   // this.images = images;
     this.con = con;
 }
 
@@ -39,24 +38,17 @@ public UploadToCloudinary(Controller con)
     {
         try
         {
-           /* Log.d("MyFilePath", con.getImages().get(0).getFilePath());
-
-            URL url=new URL(con.getMobileCloudinary().url().generate("xcsxtgkgdhbespd3x2qm"));
-
-            Log.d("Url url = ", url.toString());*/
-
-
             File file = new File(con.getImages().get(0).getFilePath());
 
             Map uploadResult = con.getMobileCloudinary().uploader().upload(file, ObjectUtils.emptyMap());
 
-            Log.d("MyTag", uploadResult.toString());
+//            Log.d("MyTag", uploadResult.toString());
 
             con.setPublicId(uploadResult.get("public_id").toString());//получение id OK
 
-            Log.d("ID = ", con.getPublicId());
+//            Log.d("ID = ", con.getPublicId());
 
-            con.addPhotoToDB(); // в главный тред передаем id(имя) новой фотки, всё паблик-колхоз
+            con.addPhotoToDB();
 
         }
         catch (IOException e)

@@ -11,11 +11,15 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Url;
 import com.cloudinary.utils.ObjectUtils;
+import edu.test1.bfrohtua.bfrohtua.ActivityLogin;
+import edu.test1.bfrohtua.bfrohtua.FragmentCloudinary;
 import edu.test1.bfrohtua.bfrohtua.ImageData;
+import edu.test1.bfrohtua.bfrohtua.R;
 
 import java.net.URL;
 import java.util.ArrayList;
