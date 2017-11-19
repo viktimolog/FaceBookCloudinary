@@ -27,6 +27,8 @@ import java.util.Arrays;
 
 public class ActivityLogin extends AppCompatActivity
 {
+    public static final int HANDLER_FROMFB = 173547;
+
     private Controller con;
     static Handler hMain;
 
@@ -44,13 +46,10 @@ public class ActivityLogin extends AppCompatActivity
         @Override
         public void onCreate(SQLiteDatabase db)
         {
-            /*db.execSQL("create table ipserver (_id integer primary key autoincrement, ipServer varchar(25))");
 
-            db.execSQL("create table username (_id integer primary key autoincrement, userName varchar(25))");
+            db.execSQL("create table users (_id integer primary key autoincrement, email varchar(100))");
 
-            db.execSQL("create table history (_id integer primary key autoincrement, idUser integer, history varchar(255))");
-
-            db.execSQL("create table lastsession (_id integer primary key autoincrement, userName varchar(25), ipServer varchar(25))");*/
+            db.execSQL("create table photos (_id integer primary key autoincrement, idUser integer, public_id varchar(50))");
         }
 
         @Override
@@ -84,16 +83,21 @@ public class ActivityLogin extends AppCompatActivity
         @Override
         public void handleMessage(Message msg)
         {
-         /*   if (msg.what == ActivityLogin.HANDLER_KEYSERVER)//static const
+            if (msg.what == ActivityLogin.HANDLER_FROMFB)
             {
                 ActivityLogin ma = wrActivity.get();
                 if (ma != null)
                 {
-                    ma.con.setIPServer(msg.obj.toString());
-                    ma.dialogInputName();
+                    //проверка есть ли юзер адд ту база и тп
+
+                    ma.con.setEmail(msg.obj.toString());
+
+                    Log.d("email handler = ", ma.con.getEmail());
+
+                    ma.installFragment(new FragmentCloudinary());
                 }
             }
-            if (msg.what == ActivityLogin.HANDLER_KEYUSERNAME)//static const
+           /* if (msg.what == ActivityLogin.HANDLER_KEYUSERNAME)//static const
             {
                 ActivityLogin ma = wrActivity.get();
                 if (ma != null)
@@ -135,7 +139,12 @@ public class ActivityLogin extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        con = new Controller();
+        hMain = new MyHandler(this);
+
+        connector = new SQLiteConnector(this, "edu.hometask.androidmessenger.Messenger", 1);
+        db = connector.getWritableDatabase();
+
+        con = new Controller(db);
 
         installFragment(new FragmentFB());
 

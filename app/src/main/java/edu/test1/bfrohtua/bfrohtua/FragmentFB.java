@@ -22,7 +22,7 @@ import java.util.Arrays;
 
 public class FragmentFB extends Fragment
 {
-    private String email;
+    private Controller con;
 
     private LoginButton enterByFB ;
 
@@ -39,6 +39,8 @@ public class FragmentFB extends Fragment
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
     {
         View v = inflater.inflate(R.layout.fragment_fragment_fb, null, false);
+
+        con = ((ActivityLogin) getActivity()).getCon();
 
         enterByFB = (LoginButton) v.findViewById(R.id.login_button);
 
@@ -66,10 +68,23 @@ public class FragmentFB extends Fragment
                                             {
                                                 try
                                                 {
-                                                    tv.setText(object.getString("email")+" - "+object.getString("first_name"));
-                                                    ((ActivityLogin) getActivity()).getCon().setEmail(object.getString("email"));//wrote email in controller
-                                                    Log.d("EMAIL = ", ((ActivityLogin) getActivity()).getCon().getEmail());//working
-                                                    ((ActivityLogin) getActivity()).installFragment(new FragmentCloudinary());
+                                                   tv.setText(object.getString("email")+" - "+object.getString("first_name"));
+                                                    con.setEmail(object.getString("email"));//wrote email in controller OK
+                                                    Log.d("EMAIL = ", con.getEmail());
+
+                                                   /* ActivityLogin.hMain.sendMessage(
+                                                            ActivityLogin.hMain.obtainMessage(
+                                                                    ActivityLogin.HANDLER_FROMFB, object.getString("email")));*/
+
+
+                                                  /*  if(con.isUserInDB()==-1)//делается в photosFromCloudinary в fragCloud
+                                                    {
+                                                        con.addUserToDB();
+                                                    }
+
+                                                    con.setIdUser(con.isUserInDB());*/
+
+                                                    ((ActivityLogin) getActivity()).installFragment(new FragmentCloudinary());// run 2 fragment
                                                 }
                                                 catch (JSONException e)
                                                 {
@@ -131,7 +146,6 @@ public class FragmentFB extends Fragment
     {
         super.onActivityResult(requestCode, resultCode, data);
         callbackManager.onActivityResult(requestCode, resultCode, data);
-
     }
 
     //при вращении экрана и т д сохраняем все что происходит на экране,
