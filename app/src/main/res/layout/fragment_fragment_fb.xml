@@ -11,17 +11,6 @@
             android:layout_gravity="center_horizontal"
     />
 
-
-    <TextView
-            android:id="@+id/tv"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:text="TextFragment"
-            android:layout_weight="0.5"
-            android:layout_gravity="center_horizontal">
-
-    </TextView>
-
 </LinearLayout>
 
 

@@ -5,22 +5,28 @@
              tools:context="edu.test1.bfrohtua.bfrohtua.FragmentCloudinary" android:orientation="vertical">
 
     <Button
-            android:text="@string/upload"
+            android:text="@string/uploadSt"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/btnChoice" android:layout_weight="0.9"/>
+            android:id="@+id/btnChoice" android:layout_weight="0.88"/>
+    <Button
+            android:text="@string/uploadMy"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/btnChoice1" android:layout_weight="0.88"/>
 
     <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/iv"
             android:scaleType="centerCrop"
-            android:visibility="visible" android:layout_weight="0.2"/>
+            android:visibility="visible" android:layout_weight="0.21"/>
 
     <Spinner
             android:text="@string/choicephoto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/spinner" android:layout_weight="0.9" android:textAlignment="center"/>
+            android:id="@+id/spinner" android:layout_weight="0.91" android:textAlignment="center"
+            tools:theme="@style/AppTheme"/>
 
 </LinearLayout>

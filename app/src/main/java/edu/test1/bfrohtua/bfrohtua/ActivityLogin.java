@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageInstaller;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -27,10 +28,10 @@ import java.util.Arrays;
 
 public class ActivityLogin extends AppCompatActivity
 {
-    public static final int HANDLER_FROMFB = 173547;
+    public static final String SERVICE_ImagesPaths = "SERVICE_ImagesPaths";
+    public static final String SERVICE_IdUser = "SERVICE_IdUser";
 
     private Controller con;
-    static Handler hMain;
 
     private SQLiteConnector connector;
     private SQLiteDatabase db;
@@ -55,10 +56,9 @@ public class ActivityLogin extends AppCompatActivity
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
         {
-            //все возможные варианты
             if(oldVersion==1 && newVersion==2)
             {
-//				alterTable etc
+
             }
             else if(oldVersion==2 && newVersion==3)
             {
@@ -71,50 +71,8 @@ public class ActivityLogin extends AppCompatActivity
         }
     }
 
-    static class MyHandler extends Handler
-    {
-        WeakReference<ActivityLogin> wrActivity;
 
-        public MyHandler(ActivityLogin activity)
-        {
-            wrActivity = new WeakReference<>(activity);
-        }
-
-        @Override
-        public void handleMessage(Message msg)
-        {
-            if (msg.what == ActivityLogin.HANDLER_FROMFB)
-            {
-                ActivityLogin ma = wrActivity.get();
-                if (ma != null)
-                {
-                    //проверка есть ли юзер адд ту база и тп
-
-                    ma.con.setEmail(msg.obj.toString());
-
-                    Log.d("email handler = ", ma.con.getEmail());
-
-                    ma.installFragment(new FragmentCloudinary());
-                }
-            }
-           /* if (msg.what == ActivityLogin.HANDLER_KEYUSERNAME)//static const
-            {
-                ActivityLogin ma = wrActivity.get();
-                if (ma != null)
-                {
-                    ma.con.setUserName(msg.obj.toString());
-                    ma.con.getMessage().setFrom(ma.con.getUserName());
-                    ma.con.getMessage().setTo("server");
-                    ma.con.getMessage().setText("regusername");
-
-                    //Первое подключение к серверу
-                    new Thread(new CreateSocketThread(ma.con)).start();
-                }
-            }*/
-        }
-    }
-
-    public void installFragment(Fragment frag)
+    public void installFragment(Fragment frag, Boolean BackStack)
     {
         FragmentTransaction ft = null;
 
@@ -122,8 +80,12 @@ public class ActivityLogin extends AppCompatActivity
         {
             ft = getFragmentManager().beginTransaction();
 
-//            ft.replace(R.id.F1MA, new FragmentFB());
             ft.replace(R.id.F1MA, frag);
+
+            if(BackStack)
+            {
+              ft.addToBackStack(null);
+            }
 
             ft.commit();
         }
@@ -139,15 +101,15 @@ public class ActivityLogin extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        hMain = new MyHandler(this);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
         connector = new SQLiteConnector(this, "edu.hometask.androidmessenger.Messenger", 1);
         db = connector.getWritableDatabase();
 
-        con = new Controller(db);
+        con = new Controller();
+        con.setDb(db);
 
-        installFragment(new FragmentFB());
-
+        installFragment(new FragmentFB(), false);
     }
 
     @Override
@@ -160,10 +122,5 @@ public class ActivityLogin extends AppCompatActivity
 
     public Controller getCon() {
         return con;
-    }
-
-    public void setCon(Controller con)
-    {
-        this.con = con;
     }
 }

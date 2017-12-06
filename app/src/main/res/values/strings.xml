@@ -3,7 +3,9 @@
     <string name="facebook_app_id">756939494508850</string>
     <string name="fb_login_protocol_scheme">fb756939494508850</string>
 
-    <string name="upload">Open Gallery for Upload</string>
+    <string name="uploadSt">Open Standart Gallery for Upload</string>
+    <string name="uploadMy">Open My Gallery for Upload</string>
+    <string name="uploadBtnMenu">Upload</string>
     <string name="choicephoto">Choice Photo</string>
 
     <!-- TODO: Remove or change this placeholder text -->

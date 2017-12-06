@@ -1,7 +1,9 @@
 package edu.test1.bfrohtua.bfrohtua;
 
-import android.content.Context;
-import android.content.Intent;
+import android.content.*;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.util.Log;
@@ -9,28 +11,70 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import com.google.gson.Gson;
 import edu.test1.bfrohtua.bfrohtua.controllers.Controller;
+import edu.test1.bfrohtua.bfrohtua.myGallery.ActivityGallery;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import static android.app.Activity.RESULT_OK;
+import static edu.test1.bfrohtua.bfrohtua.ActivityLogin.SERVICE_IdUser;
 
 
 public class FragmentCloudinary extends Fragment
 {
-
+    private BroadcastReceiver br;;
     private ArrayAdapter<String> adapterPhotos;
     private Spinner spinner;
     private Button btnChoice;
+    private Button btnChoice1;
     private ImageView iv;
     private Controller con;
 
     private static final int PICK_IMAGE_MULTIPLE = 78546;
+    public static final String PARAM_STATUS = "PARAM_STATUS";
+    public static final int STATUS_FINISH = 52178;
+    public final static String BROADCAST_ACTION = "edu.test1.bfrohtua.bfrohtua";
 
     public FragmentCloudinary()
     {
 
+    }
+
+    class GetImage extends AsyncTask<Void, Integer, Void> {
+        @Override
+        protected Void doInBackground(Void... unused)
+        {
+            try
+            {
+                con.setUrl(new URL(con.getMobileCloudinary().url().generate(con.getChoicePhoto())));
+            }
+            catch (MalformedURLException e)
+            {
+                e.printStackTrace();
+            }
+
+            try
+            {
+                con.setBmp(BitmapFactory.decodeStream(con.getUrl().openConnection().getInputStream()));
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+        @Override
+        protected void onProgressUpdate(Integer... items) {
+
+        }
+        @Override
+        protected void onPostExecute(Void unused) {
+            iv.setImageBitmap(con.getBmp());
+        }
     }
 
     public void refreshSpinner()
@@ -39,10 +83,35 @@ public class FragmentCloudinary extends Fragment
 
         adapterPhotos=null;
 
-        adapterPhotos = new ArrayAdapter<String>(getActivity().getApplicationContext()
-                , android.R.layout.simple_list_item_1 , con.getPhotosFromCloudinary());
+        adapterPhotos = new ArrayAdapter<>(getActivity().getApplicationContext()
+                , R.layout.spinner_row , con.getPhotosFromCloudinary());
 
         spinner.setAdapter(adapterPhotos);
+
+        spinner.setSelection(spinner.getCount()-1);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+
+        br = new BroadcastReceiver()
+        {
+            public void onReceive(Context context, Intent intent)
+            {
+                int status = intent.getIntExtra(PARAM_STATUS, 0);
+
+                if (status == STATUS_FINISH)
+                {
+                    refreshSpinner();
+                }
+            }
+        };
+
+        IntentFilter intFilt = new IntentFilter(BROADCAST_ACTION);
+        getActivity().registerReceiver(br, intFilt);
     }
 
     @Override
@@ -50,9 +119,7 @@ public class FragmentCloudinary extends Fragment
     {
         con = ((ActivityLogin)getActivity()).getCon();
 
-        con.getPhotosFromDB();//либо загрузил фотки в photosFromCloudinary либо добавил юзера
-
-//        Log.d("email Constr Cloud = ", con.getEmail());//OK
+        con.getPhotosFromDB();
 
         View v = inflater.inflate(R.layout.fragment_fragment_cloudinary, container, false);
 
@@ -61,6 +128,7 @@ public class FragmentCloudinary extends Fragment
         refreshSpinner();
 
         btnChoice = (Button)v.findViewById(R.id.btnChoice);
+        btnChoice1 = (Button)v.findViewById(R.id.btnChoice1);
 
         iv = (ImageView)v.findViewById(R.id.iv);
 
@@ -70,26 +138,14 @@ public class FragmentCloudinary extends Fragment
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id)
             {
                 con.setChoicePhoto(con.getPhotosFromCloudinary().get(position));
-                Log.d("choicePhoto = ", con.getChoicePhoto());
 
-                new Thread(new GetImageFromCloudinary(con)).start();
-
-                try//этот колхоз порешать хендлером
-                {
-                    Thread.sleep(10000);//меньше 10с не катит
-                }
-                catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-
-                iv.setImageBitmap(con.getBmp());
+                new GetImage().execute();//AsyncTask get Image from Cloudinary and load ImageView
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView)
             {
-                //ничо не делаю
+
             }
 
         });
@@ -103,10 +159,21 @@ public class FragmentCloudinary extends Fragment
                 intent.setType("image/*");
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 intent.setAction(Intent.ACTION_GET_CONTENT);
+                Toast.makeText(getActivity(), "Select Picture: 1 - 5", Toast.LENGTH_LONG).show();
                 startActivityForResult(Intent.createChooser(intent,"Select Picture: 1 - 5"), PICK_IMAGE_MULTIPLE);
             }
         });
 
+        btnChoice1.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                Intent intent = new Intent(getActivity(), ActivityGallery.class);
+                intent.putExtra(SERVICE_IdUser,con.getIdUser()+"");
+                startActivity(intent);
+            }
+        });
 
         return v;
     }
@@ -121,46 +188,75 @@ public class FragmentCloudinary extends Fragment
             case PICK_IMAGE_MULTIPLE:
                 if(resultCode == RESULT_OK)
                 {
-                    con.emptyImages();
+                    con.newImagesPathsList();//create new List for paths
 
-                    int numberOfImages = imageReturnedIntent.getClipData().getItemCount();
+                    int numberOfImages;
 
-                    Log.d("numberOfImages = ", numberOfImages+"");
+                    ClipData clipData = imageReturnedIntent.getClipData();
 
-                    for (int i = 0; i < numberOfImages; i++)
+                    if (clipData == null) //choiced 1 file
                     {
-                        try
+                        Uri uri = imageReturnedIntent.getData();
+                        con.getImagesPaths().add(con.getPath(getActivity(), uri));
+                    }
+                    else
+                    {
+                        numberOfImages = imageReturnedIntent.getClipData().getItemCount();
+
+                        if(numberOfImages>5)
                         {
-                            ImageData imageData = new ImageData();
-                            imageData.setUri(imageReturnedIntent.getClipData().getItemAt(i).getUri()); //нормальный это Uri
-
-                            imageData.setFilePath(con.getPath(getActivity(), imageData.getUri()));//TODO getActivity() не факт OK
-
-                            Log.d("imageData.filePath = ",imageData.getFilePath());//OK
-
-                            con.getImages().add(imageData);
+                            Toast.makeText(getActivity(), "You have selected more than 5 images", Toast.LENGTH_LONG).show();
+                            Intent intent = new Intent();
+                            intent.setType("image/*");
+                            intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                            intent.setAction(Intent.ACTION_GET_CONTENT);
+                            startActivityForResult(Intent.createChooser(intent,"Select Picture: 1 - 5"), PICK_IMAGE_MULTIPLE);
                         }
-                        catch (Exception e)
+
+                        for (int i = 0; i < numberOfImages; i++)
                         {
-                            e.printStackTrace();
+                            try
+                            {
+                                Uri tempUri = imageReturnedIntent.getClipData().getItemAt(i).getUri();
+
+                                con.getImagesPaths().add(con.getPath(getActivity(), tempUri));
+                            }
+                            catch (Exception e)
+                            {
+                                e.printStackTrace();
+                            }
                         }
                     }
 
-                    Toast.makeText(getActivity(),con.getImages().size()+"" , Toast.LENGTH_LONG).show();
+                    getActivity().startService(new Intent(getActivity(),ImagesToCloudinaryService.class)
+                            .putExtra(ActivityLogin.SERVICE_ImagesPaths, new Gson().toJson(con.getImagesPaths()))
+                    .putExtra(SERVICE_IdUser,con.getIdUser()));
 
-                    new Thread(new UploadToCloudinary(con)).start();//пытаемся загрузить на cloudinary TODO
-
-                    try//этот колхоз порешать хендлером
-                    {
-                        Thread.sleep(10000);//меньше 10с не катит
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-
-                    refreshSpinner();
                 }
         }
+    }
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        getActivity().unregisterReceiver(br);
+        super.onDestroy();
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedState)
+    {
+        super.onSaveInstanceState(savedState);
     }
 }

@@ -26,13 +26,18 @@ public class FragmentFB extends Fragment
 
     private LoginButton enterByFB ;
 
-    private TextView tv;
-
     private CallbackManager callbackManager;
 
     public FragmentFB()
     {
         // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+        LoginManager.getInstance().logOut();
     }
 
     @Override
@@ -43,8 +48,6 @@ public class FragmentFB extends Fragment
         con = ((ActivityLogin) getActivity()).getCon();
 
         enterByFB = (LoginButton) v.findViewById(R.id.login_button);
-
-        tv = (TextView) v.findViewById(R.id.tv);
 
         enterByFB.setReadPermissions("email");
 
@@ -68,23 +71,10 @@ public class FragmentFB extends Fragment
                                             {
                                                 try
                                                 {
-                                                   tv.setText(object.getString("email")+" - "+object.getString("first_name"));
                                                     con.setEmail(object.getString("email"));//wrote email in controller OK
                                                     Log.d("EMAIL = ", con.getEmail());
 
-                                                   /* ActivityLogin.hMain.sendMessage(
-                                                            ActivityLogin.hMain.obtainMessage(
-                                                                    ActivityLogin.HANDLER_FROMFB, object.getString("email")));*/
-
-
-                                                  /*  if(con.isUserInDB()==-1)//делается в photosFromCloudinary в fragCloud
-                                                    {
-                                                        con.addUserToDB();
-                                                    }
-
-                                                    con.setIdUser(con.isUserInDB());*/
-
-                                                    ((ActivityLogin) getActivity()).installFragment(new FragmentCloudinary());// run 2 fragment
+                                                    ((ActivityLogin) getActivity()).installFragment(new FragmentCloudinary(), true);// run 2 fragment
                                                 }
                                                 catch (JSONException e)
                                                 {
@@ -118,29 +108,27 @@ public class FragmentFB extends Fragment
         return v;
     }
 
-    //как только возвращаемся обратно запускаем обратно поток
     @Override
     public void onResume()
     {
+        LoginManager.getInstance().logOut();
         super.onResume();
     }
 
-    // на паузе стопим все к чертям
     @Override
     public void onPause()
     {
+        LoginManager.getInstance().logOut();
         super.onPause();
     }
 
-    //выходя гасите свет, убиваем процес что бы не палить електричество
     @Override
     public void onDestroy()
     {
+        LoginManager.getInstance().logOut();
         super.onDestroy();
     }
 
-    //по возвращению обратно на активность передаем все полученные данные с диалога в колбек
-    // и живем дальше счастливо
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
@@ -148,11 +136,9 @@ public class FragmentFB extends Fragment
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    //при вращении экрана и т д сохраняем все что происходит на экране,
-    // а то активити обычно обновляется. а диалог останется жив
     @Override
-    public void onSaveInstanceState(Bundle savedState) {
+    public void onSaveInstanceState(Bundle savedState)
+    {
         super.onSaveInstanceState(savedState);
     }
-
 }

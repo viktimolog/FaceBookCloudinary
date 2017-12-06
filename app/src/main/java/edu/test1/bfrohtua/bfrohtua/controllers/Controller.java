@@ -11,11 +11,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
-import android.widget.ArrayAdapter;
 import com.cloudinary.Cloudinary;
-import com.cloudinary.Url;
-import com.cloudinary.utils.ObjectUtils;
-import edu.test1.bfrohtua.bfrohtua.ImageData;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -26,6 +22,7 @@ import java.util.Map;
 public class Controller
 {
     private String choicePhoto;
+    private ArrayList<String> imagesPaths;
 
     private URL url;
     private Bitmap bmp;
@@ -37,25 +34,21 @@ public class Controller
     private Cloudinary mobileCloudinary;
 
     private ArrayList<String> photosFromCloudinary;
-//    public ArrayAdapter<String> adapterPhotos;
 
-    private List<ImageData> images;
-    
     private int idUser;
     private String publicId;
 
-    public Controller(SQLiteDatabase db)
+    public Controller( )
     {
-        this.db = db;
         photosFromCloudinary = new ArrayList<>();
         idUser = -1;
         newCloudinary();//create logins for Cloudinary, my logins now
     }
 
-    public void emptyImages()
+    public void newImagesPathsList()
     {
-        images=null;
-        images = new ArrayList<>();
+        imagesPaths=null;
+        imagesPaths = new ArrayList<>();
     }
 
     public void newCloudinary()
@@ -109,24 +102,20 @@ public class Controller
         {
             tmp = result.getString(0);
 
-            idUser = Integer.parseInt(tmp); //нашли айди юзера текущего
+            idUser = Integer.parseInt(tmp);
 
             Cursor result1 = db.rawQuery("SELECT * FROM photos WHERE idUser = '" + idUser + "'", null);
 
             while (result1.moveToNext())
             {
-                photosFromCloudinary.add(result1.getString(2));
+                photosFromCloudinary.add(result1.getString(2));//load photos to spinner's adapter
             }
-
-            //TODO загрузка фоток в адаптер спиннера
         }
         else
         {
             addUserToDB();
 
         }
-
-//		Log.d("get History From DB",Integer.toString(arrListHistory.size()));
     }
 
     public String getPath(final Context context, final Uri uri)
@@ -228,10 +217,6 @@ public class Controller
         return mobileCloudinary;
     }
 
-    public List<ImageData> getImages() {
-        return images;
-    }
-
     public String getPublicId() {
         return publicId;
     }
@@ -284,5 +269,17 @@ public class Controller
 
     public void setChoicePhoto(String choicePhoto) {
         this.choicePhoto = choicePhoto;
+    }
+
+    public List<String> getImagesPaths() { return imagesPaths; }
+
+    public void setImagesPaths(ArrayList<String> imagesPaths) { this.imagesPaths = imagesPaths; }
+
+    public SQLiteDatabase getDb() {
+        return db;
+    }
+
+    public void setDb(SQLiteDatabase db) {
+        this.db = db;
     }
 }
